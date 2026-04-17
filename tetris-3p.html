@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tetris Arena Co-Op 3P</title>
+  <title>Tetris Arena Remote Co-Op 3P</title>
   <style>
     :root {
       --bg-1: #07111d;
       --bg-2: #02060b;
-      --panel: rgba(8, 14, 25, 0.86);
+      --panel: rgba(8, 14, 25, 0.88);
+      --panel-soft: rgba(255, 255, 255, 0.04);
       --border: rgba(255, 255, 255, 0.08);
       --text: #f4f7fb;
       --muted: #9eb1ca;
       --cyan: #00d1ff;
       --orange: #ff9f1c;
       --red: #ff5f6d;
+      --green: #87ffbd;
+      --amber: #ffd166;
       --shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
     }
 
@@ -26,7 +29,7 @@
 
     body {
       min-height: 100vh;
-      padding: 28px 18px 40px;
+      padding: 24px 14px 32px;
       display: flex;
       justify-content: center;
       background:
@@ -39,18 +42,19 @@
     }
 
     .shell {
-      width: min(1240px, 100%);
+      width: min(1180px, 100%);
       display: flex;
       flex-direction: column;
-      gap: 22px;
-      animation: fade-in 700ms ease-out both;
+      gap: 18px;
+      animation: fade-in 650ms ease-out both;
     }
 
     .hero,
     .arena-panel,
+    .network-card,
     .player-card {
       border: 1px solid var(--border);
-      border-radius: 28px;
+      border-radius: 24px;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
         var(--panel);
@@ -59,31 +63,27 @@
     }
 
     .hero {
-      padding: 24px 28px;
+      padding: 22px 24px;
     }
 
     .hero h1 {
       font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
-      font-size: clamp(2.4rem, 4vw, 4.5rem);
+      font-size: clamp(2.2rem, 4vw, 4rem);
       line-height: 0.95;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .hero p {
       max-width: 940px;
       color: var(--muted);
       line-height: 1.55;
-      font-size: 1rem;
-    }
-
-    .hero strong {
-      color: var(--text);
+      font-size: 0.98rem;
     }
 
     .arena-panel {
-      padding: 22px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 18px;
@@ -94,14 +94,19 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .arena-head h2 {
+    .arena-head h2,
+    .network-card h3,
+    .player-card h3 {
       font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      font-size: 1.55rem;
+    }
+
+    .arena-head h2 {
+      font-size: 1.45rem;
     }
 
     .pill-row {
@@ -114,94 +119,222 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 9px 12px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.07);
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--panel-soft);
       color: var(--muted);
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
     .pill strong {
       color: var(--text);
-      font-size: 1rem;
-      letter-spacing: 0.04em;
+      font-size: 0.96rem;
+      letter-spacing: 0.03em;
     }
 
     .arena-body {
       display: flex;
-      gap: 20px;
+      gap: 18px;
       align-items: stretch;
       flex-wrap: wrap;
     }
 
     .canvas-shell {
-      flex: 1 1 360px;
-      min-width: 280px;
-      padding: 14px;
-      border-radius: 22px;
+      flex: 0 0 230px;
+      padding: 12px;
+      border-radius: 20px;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)),
         rgba(2, 8, 15, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     canvas {
       display: block;
-      width: 100%;
-      max-width: 360px;
-      margin: 0 auto;
-      height: auto;
+      width: 180px;
+      height: 360px;
       background:
         linear-gradient(180deg, rgba(16, 27, 45, 0.95), rgba(5, 11, 20, 0.98));
-      border-radius: 18px;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 20px 36px rgba(0, 0, 0, 0.35);
+      border-radius: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 16px 28px rgba(0, 0, 0, 0.35);
     }
 
-    .coop-notes {
-      flex: 1 1 260px;
-      min-width: 250px;
+    .arena-side {
+      flex: 1 1 340px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      justify-content: center;
+      gap: 12px;
     }
 
     .note-card {
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.07);
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--panel-soft);
     }
 
-    .note-card h3 {
+    .note-card h3,
+    .network-section h4 {
       margin-bottom: 6px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: var(--muted);
     }
 
-    .note-card p {
+    .note-card p,
+    .network-card p,
+    .player-card p,
+    .player-card li,
+    .network-help {
+      color: var(--muted);
+      line-height: 1.48;
+      font-size: 0.93rem;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .ghost-button,
+    .copy-button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: transform 160ms ease, filter 160ms ease, opacity 160ms ease;
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, var(--cyan), #6be3ff);
+      color: #04101c;
+      font-weight: 700;
+    }
+
+    .secondary-button {
+      background: linear-gradient(135deg, var(--orange), #ffd166);
+      color: #08111f;
+      font-weight: 700;
+    }
+
+    .ghost-button,
+    .copy-button {
+      background: rgba(255, 255, 255, 0.06);
       color: var(--text);
-      line-height: 1.45;
-      font-size: 0.97rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    button:hover,
+    select:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      transform: none;
+      filter: none;
+    }
+
+    .network-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .network-card {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .network-card h3 {
+      font-size: 1.2rem;
+    }
+
+    .network-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--panel-soft);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .network-section label {
+      color: var(--text);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(5, 10, 18, 0.9);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    textarea {
+      min-height: 118px;
+      resize: vertical;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .log-box {
+      min-height: 88px;
+      max-height: 190px;
+      overflow-y: auto;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(4, 9, 17, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-box div {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
     }
 
     .players {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
+      gap: 16px;
     }
 
     .player-card {
       flex: 1 1 260px;
-      padding: 20px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       position: relative;
       overflow: hidden;
     }
@@ -209,13 +342,13 @@
     .player-card::before {
       content: "";
       position: absolute;
-      width: 140px;
-      height: 140px;
+      width: 130px;
+      height: 130px;
       border-radius: 999px;
-      left: -40px;
-      top: -40px;
+      left: -36px;
+      top: -36px;
       opacity: 0.16;
-      filter: blur(28px);
+      filter: blur(24px);
       pointer-events: none;
     }
 
@@ -231,25 +364,11 @@
       background: var(--red);
     }
 
-    .player-card h3 {
-      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 1.3rem;
-    }
-
-    .player-card p,
-    .player-card li {
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 0.95rem;
-    }
-
     .player-card ul {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
     }
 
     .player-card code {
@@ -259,37 +378,31 @@
       border-radius: 8px;
       padding: 2px 6px;
       font-family: Consolas, Monaco, monospace;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
+    }
+
+    .slot-state {
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .status-live {
-      color: #87ffbd;
+      color: var(--green);
     }
 
     .status-dead {
       color: #ffb4bc;
     }
 
-    .restart-button {
-      width: fit-content;
-      padding: 12px 16px;
-      border: 0;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #ff9f1c, #ff5f6d);
-      color: #08111f;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      transition: transform 180ms ease, filter 180ms ease;
+    .status-wait {
+      color: var(--amber);
     }
 
-    .restart-button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.04);
-    }
-
-    .restart-button:active {
-      transform: translateY(1px);
+    .status-idle {
+      color: var(--muted);
     }
 
     @keyframes fade-in {
@@ -304,15 +417,31 @@
       }
     }
 
-    @media (max-width: 800px) {
-      .hero,
-      .arena-panel,
-      .player-card {
-        border-radius: 22px;
+    @media (max-width: 900px) {
+      .network-grid {
+        grid-template-columns: 1fr;
       }
 
+      .hero,
+      .arena-panel,
+      .network-card,
+      .player-card {
+        border-radius: 20px;
+      }
+    }
+
+    @media (max-width: 640px) {
       body {
-        padding: 18px 12px 28px;
+        padding: 16px 10px 24px;
+      }
+
+      .canvas-shell {
+        flex-basis: 100%;
+      }
+
+      .arena-side,
+      .player-card {
+        flex-basis: 100%;
       }
     }
   </style>
@@ -320,45 +449,110 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <h1>Tetris Arena Co-Op</h1>
-      <p>Tres jogadores, uma unica peca e uma arena compartilhada. Todos os esquemas de controle apontam para a mesma instancia da classe <strong>TetrisGame</strong>, criando um modo cooperativo caotico para a mesma partida.</p>
+      <h1>Tetris Arena Remote Co-Op</h1>
+      <p>Tres jogadores podem entrar em PCs diferentes usando a mesma pagina. O Player 1 hospeda a partida, o Player 2 e o Player 3 entram como clientes remotos, e todos controlam a mesma peca pela internet via WebRTC.</p>
     </section>
 
     <section class="arena-panel">
       <div class="arena-head">
-        <h2>Partida compartilhada</h2>
+        <h2>Arena compartilhada</h2>
         <div class="pill-row">
           <div class="pill">Score <strong id="scoreValue">0</strong></div>
-          <div class="pill">Status <strong id="statusValue" class="status-live">Em jogo</strong></div>
-          <div class="pill">Modo <strong>3P Co-Op</strong></div>
+          <div class="pill">Partida <strong id="statusValue" class="status-idle">Aguardando host</strong></div>
+          <div class="pill">Meu papel <strong id="roleValue">Nao definido</strong></div>
+          <div class="pill">Rede <strong id="networkValue">Offline</strong></div>
         </div>
       </div>
 
       <div class="arena-body">
         <div class="canvas-shell">
-          <canvas id="sharedGame" width="240" height="480" aria-label="Arena compartilhada de Tetris para 3 jogadores"></canvas>
+          <canvas id="sharedGame" width="180" height="360" aria-label="Arena compartilhada de Tetris para 3 jogadores em PCs diferentes"></canvas>
         </div>
 
-        <div class="coop-notes">
+        <div class="arena-side">
           <div class="note-card">
-            <h3>Como funciona</h3>
-            <p>Qualquer jogador pode mover, derrubar ou rotacionar a mesma peca ativa. O ultimo input valido vence, entao coordenacao faz diferenca.</p>
+            <h3>Leitura da tela</h3>
+            <p>O tabuleiro foi reduzido para 180x360, entao agora da para acompanhar a peca do topo ate o piso inteiro sem perder o enquadramento.</p>
           </div>
 
           <div class="note-card">
-            <h3>Mecanicas</h3>
-            <p>As 7 pecas classicas estao ativas, com colisao lateral, inferior e de rotacao, limpeza de linhas, score acumulado e game over da equipe.</p>
+            <h3>Fluxo rapido</h3>
+            <p>1. O Player 1 ativa o host. 2. Gera um convite para P2 e outro para P3. 3. Cada jogador remoto abre a mesma pagina em outro PC, cola o convite, gera a resposta e devolve ao host.</p>
           </div>
 
-          <button id="restartButton" class="restart-button" type="button">Reiniciar partida</button>
+          <div class="button-row">
+            <button id="hostModeButton" class="primary-button" type="button">Hospedar como Player 1</button>
+            <button id="restartButton" class="ghost-button" type="button" disabled>Reiniciar partida</button>
+          </div>
         </div>
       </div>
+    </section>
+
+    <section class="network-grid">
+      <article class="network-card">
+        <h3>Host / Player 1</h3>
+        <p>Use este bloco apenas no PC que vai rodar a simulacao principal. O host mantem a fisica, envia snapshots para os outros PCs e aceita os inputs remotos.</p>
+
+        <div class="network-section">
+          <h4>Convite do Player 2</h4>
+          <div class="button-row">
+            <button id="createOfferP2Button" class="secondary-button" type="button">Gerar convite P2</button>
+            <button class="copy-button" type="button" data-copy-target="offerP2Output">Copiar convite P2</button>
+          </div>
+          <textarea id="offerP2Output" readonly spellcheck="false" placeholder="O host gera aqui o codigo do convite do Player 2."></textarea>
+          <label for="answerP2Input">Resposta do Player 2</label>
+          <textarea id="answerP2Input" spellcheck="false" placeholder="Cole aqui a resposta gerada no PC do Player 2."></textarea>
+          <button id="applyAnswerP2Button" class="ghost-button" type="button">Conectar Player 2</button>
+        </div>
+
+        <div class="network-section">
+          <h4>Convite do Player 3</h4>
+          <div class="button-row">
+            <button id="createOfferP3Button" class="secondary-button" type="button">Gerar convite P3</button>
+            <button class="copy-button" type="button" data-copy-target="offerP3Output">Copiar convite P3</button>
+          </div>
+          <textarea id="offerP3Output" readonly spellcheck="false" placeholder="O host gera aqui o codigo do convite do Player 3."></textarea>
+          <label for="answerP3Input">Resposta do Player 3</label>
+          <textarea id="answerP3Input" spellcheck="false" placeholder="Cole aqui a resposta gerada no PC do Player 3."></textarea>
+          <button id="applyAnswerP3Button" class="ghost-button" type="button">Conectar Player 3</button>
+        </div>
+      </article>
+
+      <article class="network-card">
+        <h3>Entrar remoto / P2 ou P3</h3>
+        <p>Abra este mesmo site no PC do jogador remoto, escolha o slot certo, cole o convite do host e gere a resposta para devolver ao Player 1.</p>
+
+        <div class="network-section">
+          <label for="joinSlotSelect">Entrar como</label>
+          <select id="joinSlotSelect">
+            <option value="P2">Player 2</option>
+            <option value="P3">Player 3</option>
+          </select>
+
+          <label for="joinOfferInput">Convite do host</label>
+          <textarea id="joinOfferInput" spellcheck="false" placeholder="Cole aqui o convite recebido do host."></textarea>
+
+          <div class="button-row">
+            <button id="createAnswerButton" class="secondary-button" type="button">Gerar resposta remota</button>
+            <button class="copy-button" type="button" data-copy-target="joinAnswerOutput">Copiar resposta</button>
+          </div>
+
+          <label for="joinAnswerOutput">Resposta gerada</label>
+          <textarea id="joinAnswerOutput" readonly spellcheck="false" placeholder="A resposta para devolver ao host aparece aqui."></textarea>
+        </div>
+
+        <div class="network-section">
+          <h4>Log de conexao</h4>
+          <div id="systemLog" class="log-box"></div>
+        </div>
+      </article>
     </section>
 
     <section class="players">
       <article class="player-card p1">
         <h3>Player 1</h3>
-        <p>Controle tradicional para liderar o posicionamento da peca compartilhada.</p>
+        <div id="slotP1State" class="slot-state status-idle">Host ainda nao ativado</div>
+        <p>O Player 1 fica no PC do host e usa o controle local. Ele tambem e o ponto central da simulacao e da sincronizacao.</p>
         <ul>
           <li><code>Seta Esquerda</code> move para a esquerda</li>
           <li><code>Seta Direita</code> move para a direita</li>
@@ -369,7 +563,8 @@
 
       <article class="player-card p2">
         <h3>Player 2</h3>
-        <p>Segundo jogador entra no mesmo fluxo e disputa o timing da mesma peca.</p>
+        <div id="slotP2State" class="slot-state status-idle">Aguardando conexao</div>
+        <p>O Player 2 entra de outro PC, recebe snapshots do host e envia apenas inputs para a partida compartilhada.</p>
         <ul>
           <li><code>A</code> move para a esquerda</li>
           <li><code>D</code> move para a direita</li>
@@ -380,7 +575,8 @@
 
       <article class="player-card p3">
         <h3>Player 3</h3>
-        <p>Terceiro conjunto de teclas para fechar o modo cooperativo na mesma tela.</p>
+        <div id="slotP3State" class="slot-state status-idle">Aguardando conexao</div>
+        <p>O Player 3 repete o mesmo fluxo em um terceiro PC, com o proprio esquema de teclas e a mesma peca compartilhada.</p>
         <ul>
           <li><code>J</code> move para a esquerda</li>
           <li><code>L</code> move para a direita</li>
@@ -394,9 +590,10 @@
   <script>
     const COLS = 10;
     const ROWS = 20;
-    const BLOCK_SIZE = 24;
+    const BLOCK_SIZE = 18;
+    const SIGNAL_VERSION = 1;
+    const SNAPSHOT_INTERVAL = 80;
 
-    // Cores das 7 pecas classicas do Tetris.
     const COLORS = [
       null,
       "#00d1ff",
@@ -408,8 +605,35 @@
       "#9bff6b"
     ];
 
+    const SLOT_KEYS = {
+      P1: {
+        ArrowLeft: "left",
+        ArrowRight: "right",
+        ArrowDown: "drop",
+        ArrowUp: "rotate"
+      },
+      P2: {
+        KeyA: "left",
+        KeyD: "right",
+        KeyS: "drop",
+        KeyW: "rotate"
+      },
+      P3: {
+        KeyJ: "left",
+        KeyL: "right",
+        KeyK: "drop",
+        KeyI: "rotate"
+      }
+    };
+
+    const RTC_CONFIG = {
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" }
+      ]
+    };
+
     class TetrisGame {
-      constructor({ canvas, scoreElement, statusElement, dropInterval = 800 }) {
+      constructor({ canvas, scoreElement, statusElement, dropInterval = 800, authoritative = false }) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
         this.context.scale(BLOCK_SIZE, BLOCK_SIZE);
@@ -417,11 +641,16 @@
         this.scoreElement = scoreElement;
         this.statusElement = statusElement;
         this.dropInterval = dropInterval;
+        this.authoritative = authoritative;
 
-        this.resetGame();
+        this.clearState();
       }
 
-      resetGame() {
+      createMatrix(width, height) {
+        return Array.from({ length: height }, () => Array(width).fill(0));
+      }
+
+      clearState() {
         this.arena = this.createMatrix(COLS, ROWS);
         this.player = {
           pos: { x: 0, y: 0 },
@@ -430,13 +659,12 @@
         };
         this.dropCounter = 0;
         this.isGameOver = false;
-        this.spawnPiece();
-        this.updateHud();
+        this.updateHud("Aguardando host", "status-idle");
         this.draw();
       }
 
-      createMatrix(width, height) {
-        return Array.from({ length: height }, () => Array(width).fill(0));
+      setAuthoritative(flag) {
+        this.authoritative = flag;
       }
 
       createPiece(type) {
@@ -488,8 +716,26 @@
         }
       }
 
+      resetGame() {
+        this.arena = this.createMatrix(COLS, ROWS);
+        this.player = {
+          pos: { x: 0, y: 0 },
+          matrix: null,
+          score: 0
+        };
+        this.dropCounter = 0;
+        this.isGameOver = false;
+        this.spawnPiece();
+        this.updateHud();
+        this.draw();
+      }
+
       collide(arena, player) {
         const { matrix, pos } = player;
+
+        if (!matrix) {
+          return false;
+        }
 
         for (let y = 0; y < matrix.length; y += 1) {
           for (let x = 0; x < matrix[y].length; x += 1) {
@@ -528,7 +774,6 @@
           const row = this.arena.splice(y, 1)[0].fill(0);
           this.arena.unshift(row);
           y += 1;
-
           this.player.score += rowCount * 100;
           rowCount *= 2;
         }
@@ -563,7 +808,7 @@
       }
 
       move(dir) {
-        if (this.isGameOver) {
+        if (this.isGameOver || !this.player.matrix) {
           return;
         }
 
@@ -574,7 +819,7 @@
       }
 
       drop() {
-        if (this.isGameOver) {
+        if (this.isGameOver || !this.player.matrix) {
           return;
         }
 
@@ -592,7 +837,7 @@
       }
 
       rotatePlayer(dir = 1) {
-        if (this.isGameOver) {
+        if (this.isGameOver || !this.player.matrix) {
           return;
         }
 
@@ -601,7 +846,6 @@
 
         this.rotate(this.player.matrix, dir);
 
-        // Wall-kick simples para tentar manter a rotacao valida perto das bordas.
         while (this.collide(this.arena, this.player)) {
           this.player.pos.x += offset;
           offset = -(offset + (offset > 0 ? 1 : -1));
@@ -614,8 +858,63 @@
         }
       }
 
-      updateHud() {
+      performAction(action) {
+        if (!this.authoritative) {
+          return;
+        }
+
+        switch (action) {
+          case "left":
+            this.move(-1);
+            break;
+          case "right":
+            this.move(1);
+            break;
+          case "drop":
+            this.drop();
+            break;
+          case "rotate":
+            this.rotatePlayer(1);
+            break;
+          default:
+            break;
+        }
+      }
+
+      toSnapshot(connectedSlots) {
+        return {
+          arena: this.arena.map((row) => row.slice()),
+          player: {
+            pos: { ...this.player.pos },
+            matrix: this.player.matrix ? this.player.matrix.map((row) => row.slice()) : null,
+            score: this.player.score
+          },
+          isGameOver: this.isGameOver,
+          connectedSlots: connectedSlots.slice()
+        };
+      }
+
+      applySnapshot(snapshot) {
+        this.arena = snapshot.arena.map((row) => row.slice());
+        this.player = {
+          pos: { ...snapshot.player.pos },
+          matrix: snapshot.player.matrix ? snapshot.player.matrix.map((row) => row.slice()) : null,
+          score: snapshot.player.score
+        };
+        this.isGameOver = snapshot.isGameOver;
+        this.updateHud();
+        this.draw();
+      }
+
+      updateHud(customText, customClass) {
         this.scoreElement.textContent = this.player.score;
+
+        if (customText) {
+          this.statusElement.textContent = customText;
+          this.statusElement.className = customClass || "status-idle";
+          return;
+        }
+
         this.statusElement.textContent = this.isGameOver ? "Game Over" : "Em jogo";
         this.statusElement.className = this.isGameOver ? "status-dead" : "status-live";
       }
@@ -633,6 +932,10 @@
       }
 
       drawMatrix(matrix, offset) {
+        if (!matrix) {
+          return;
+        }
+
         matrix.forEach((row, y) => {
           row.forEach((value, x) => {
             if (value !== 0) {
@@ -661,22 +964,22 @@
         }
       }
 
-      drawGameOver() {
+      drawOverlay(title, subtitle) {
         const ctx = this.context;
 
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillStyle = "rgba(3, 7, 12, 0.78)";
+        ctx.fillStyle = "rgba(3, 7, 12, 0.76)";
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         ctx.fillStyle = "#f4f7fb";
         ctx.textAlign = "center";
-        ctx.font = 'bold 30px "Trebuchet MS", sans-serif';
-        ctx.fillText("GAME OVER", this.canvas.width / 2, this.canvas.height / 2 - 10);
+        ctx.font = 'bold 22px "Trebuchet MS", sans-serif';
+        ctx.fillText(title, this.canvas.width / 2, this.canvas.height / 2 - 8);
 
         ctx.fillStyle = "#9eb1ca";
-        ctx.font = '16px "Trebuchet MS", sans-serif';
-        ctx.fillText("Clique em Reiniciar para jogar de novo", this.canvas.width / 2, this.canvas.height / 2 + 22);
+        ctx.font = '14px "Trebuchet MS", sans-serif';
+        ctx.fillText(subtitle, this.canvas.width / 2, this.canvas.height / 2 + 18);
         ctx.restore();
       }
 
@@ -689,12 +992,14 @@
         this.drawMatrix(this.player.matrix, this.player.pos);
 
         if (this.isGameOver) {
-          this.drawGameOver();
+          this.drawOverlay("GAME OVER", "Reinicie pelo host");
+        } else if (!this.player.matrix && !this.authoritative) {
+          this.drawOverlay("AGUARDANDO", "Host ou snapshot remoto");
         }
       }
 
       update(deltaTime) {
-        if (!this.isGameOver) {
+        if (this.authoritative && !this.isGameOver && this.player.matrix) {
           this.dropCounter += deltaTime;
           if (this.dropCounter > this.dropInterval) {
             this.drop();
@@ -705,53 +1010,540 @@
       }
     }
 
-    const game = new TetrisGame({
-      canvas: document.getElementById("sharedGame"),
-      scoreElement: document.getElementById("scoreValue"),
-      statusElement: document.getElementById("statusValue")
-    });
-
-    // Todos os conjuntos de teclas apontam para a mesma peca ativa.
-    const controls = {
-      ArrowLeft: () => game.move(-1),
-      ArrowRight: () => game.move(1),
-      ArrowDown: () => game.drop(),
-      ArrowUp: () => game.rotatePlayer(1),
-      KeyA: () => game.move(-1),
-      KeyD: () => game.move(1),
-      KeyS: () => game.drop(),
-      KeyW: () => game.rotatePlayer(1),
-      KeyJ: () => game.move(-1),
-      KeyL: () => game.move(1),
-      KeyK: () => game.drop(),
-      KeyI: () => game.rotatePlayer(1)
+    const ui = {
+      scoreValue: document.getElementById("scoreValue"),
+      statusValue: document.getElementById("statusValue"),
+      roleValue: document.getElementById("roleValue"),
+      networkValue: document.getElementById("networkValue"),
+      restartButton: document.getElementById("restartButton"),
+      hostModeButton: document.getElementById("hostModeButton"),
+      createOfferP2Button: document.getElementById("createOfferP2Button"),
+      createOfferP3Button: document.getElementById("createOfferP3Button"),
+      offerP2Output: document.getElementById("offerP2Output"),
+      offerP3Output: document.getElementById("offerP3Output"),
+      answerP2Input: document.getElementById("answerP2Input"),
+      answerP3Input: document.getElementById("answerP3Input"),
+      applyAnswerP2Button: document.getElementById("applyAnswerP2Button"),
+      applyAnswerP3Button: document.getElementById("applyAnswerP3Button"),
+      joinSlotSelect: document.getElementById("joinSlotSelect"),
+      joinOfferInput: document.getElementById("joinOfferInput"),
+      createAnswerButton: document.getElementById("createAnswerButton"),
+      joinAnswerOutput: document.getElementById("joinAnswerOutput"),
+      systemLog: document.getElementById("systemLog"),
+      slotP1State: document.getElementById("slotP1State"),
+      slotP2State: document.getElementById("slotP2State"),
+      slotP3State: document.getElementById("slotP3State")
     };
 
+    const game = new TetrisGame({
+      canvas: document.getElementById("sharedGame"),
+      scoreElement: ui.scoreValue,
+      statusElement: ui.statusValue,
+      authoritative: false
+    });
+
+    const networkState = {
+      mode: "idle",
+      localSlot: null,
+      hostPeers: {
+        P2: null,
+        P3: null
+      },
+      joinPeer: null,
+      lastBroadcastAt: 0
+    };
+
+    function appendLog(message) {
+      const line = document.createElement("div");
+      line.textContent = new Date().toLocaleTimeString("pt-BR", { hour12: false }) + " - " + message;
+      ui.systemLog.prepend(line);
+      while (ui.systemLog.children.length > 10) {
+        ui.systemLog.removeChild(ui.systemLog.lastChild);
+      }
+    }
+
+    function setSlotState(slot, text, tone) {
+      const element = ui["slot" + slot + "State"];
+      element.textContent = text;
+      element.className = "slot-state " + tone;
+    }
+
+    function getConnectedSlots() {
+      const slots = [];
+
+      if (networkState.mode === "host") {
+        slots.push("P1");
+        ["P2", "P3"].forEach((slot) => {
+          const peer = networkState.hostPeers[slot];
+          if (peer && peer.channel && peer.channel.readyState === "open") {
+            slots.push(slot);
+          }
+        });
+      } else if (networkState.mode === "join" && networkState.localSlot) {
+        slots.push("P1", networkState.localSlot);
+      }
+
+      return slots;
+    }
+
+    function updateHudRole() {
+      if (networkState.mode === "host") {
+        ui.roleValue.textContent = "Host / Player 1";
+      } else if (networkState.mode === "join" && networkState.localSlot) {
+        ui.roleValue.textContent = "Cliente / " + networkState.localSlot;
+      } else {
+        ui.roleValue.textContent = "Nao definido";
+      }
+    }
+
+    function updateNetworkStatus() {
+      if (networkState.mode === "host") {
+        const connected = getConnectedSlots().length - 1;
+        ui.networkValue.textContent = connected + " remoto(s) ativo(s)";
+      } else if (networkState.mode === "join" && networkState.joinPeer && networkState.joinPeer.channel && networkState.joinPeer.channel.readyState === "open") {
+        ui.networkValue.textContent = "Ligado ao host";
+      } else if (networkState.mode === "join") {
+        ui.networkValue.textContent = "Aguardando host";
+      } else {
+        ui.networkValue.textContent = "Offline";
+      }
+    }
+
+    function updateSlotIndicators(connectedSlots) {
+      const active = new Set(connectedSlots);
+
+      setSlotState("P1", active.has("P1") ? "Host ativo" : "Host ainda nao ativado", active.has("P1") ? "status-live" : "status-idle");
+      setSlotState("P2", active.has("P2") ? "Conectado" : "Aguardando conexao", active.has("P2") ? "status-live" : "status-idle");
+      setSlotState("P3", active.has("P3") ? "Conectado" : "Aguardando conexao", active.has("P3") ? "status-live" : "status-idle");
+
+      if (networkState.mode === "join" && networkState.localSlot === "P2") {
+        setSlotState("P2", active.has("P2") ? "Seu PC conectado" : "Seu PC aguardando host", active.has("P2") ? "status-live" : "status-wait");
+      }
+
+      if (networkState.mode === "join" && networkState.localSlot === "P3") {
+        setSlotState("P3", active.has("P3") ? "Seu PC conectado" : "Seu PC aguardando host", active.has("P3") ? "status-live" : "status-wait");
+      }
+    }
+
+    function closePeer(peer) {
+      if (!peer) {
+        return;
+      }
+
+      if (peer.channel) {
+        try {
+          peer.channel.close();
+        } catch (error) {
+          void error;
+        }
+      }
+
+      if (peer.pc) {
+        try {
+          peer.pc.close();
+        } catch (error) {
+          void error;
+        }
+      }
+    }
+
+    function resetConnections() {
+      closePeer(networkState.joinPeer);
+      networkState.joinPeer = null;
+
+      closePeer(networkState.hostPeers.P2);
+      closePeer(networkState.hostPeers.P3);
+      networkState.hostPeers.P2 = null;
+      networkState.hostPeers.P3 = null;
+
+      updateNetworkStatus();
+      updateSlotIndicators(getConnectedSlots());
+    }
+
+    function enableHostMode() {
+      resetConnections();
+      networkState.mode = "host";
+      networkState.localSlot = "P1";
+      networkState.lastBroadcastAt = 0;
+      game.setAuthoritative(true);
+      game.resetGame();
+      ui.restartButton.disabled = false;
+      updateHudRole();
+      updateNetworkStatus();
+      updateSlotIndicators(getConnectedSlots());
+      appendLog("Host ativado no Player 1.");
+    }
+
+    function enableJoinMode(slot) {
+      resetConnections();
+      networkState.mode = "join";
+      networkState.localSlot = slot;
+      game.setAuthoritative(false);
+      game.clearState();
+      game.updateHud("Aguardando host", "status-wait");
+      ui.restartButton.disabled = true;
+      updateHudRole();
+      updateNetworkStatus();
+      updateSlotIndicators([]);
+      appendLog("Modo remoto preparado para " + slot + ".");
+    }
+
+    function buildSignal(kind, slot, description) {
+      return JSON.stringify({
+        version: SIGNAL_VERSION,
+        kind,
+        slot,
+        description: {
+          type: description.type,
+          sdp: description.sdp
+        }
+      }, null, 2);
+    }
+
+    function parseSignal(raw, expectedKind, expectedSlot) {
+      const data = JSON.parse(raw);
+
+      if (data.version !== SIGNAL_VERSION) {
+        throw new Error("Versao de sinal invalida.");
+      }
+
+      if (expectedKind && data.kind !== expectedKind) {
+        throw new Error("Tipo de sinal inesperado.");
+      }
+
+      if (expectedSlot && data.slot !== expectedSlot) {
+        throw new Error("Slot remoto incorreto.");
+      }
+
+      return data;
+    }
+
+    function waitForIceGathering(pc) {
+      if (pc.iceGatheringState === "complete") {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          pc.removeEventListener("icegatheringstatechange", checkState);
+          resolve();
+        }, 4000);
+
+        function checkState() {
+          if (pc.iceGatheringState === "complete") {
+            clearTimeout(timeout);
+            pc.removeEventListener("icegatheringstatechange", checkState);
+            resolve();
+          }
+        }
+
+        pc.addEventListener("icegatheringstatechange", checkState);
+      });
+    }
+
+    function wireChannel(peerRecord, slot, channel, isHostSide) {
+      peerRecord.channel = channel;
+
+      channel.onopen = () => {
+        appendLog("Canal aberto para " + slot + ".");
+        updateNetworkStatus();
+
+        if (isHostSide) {
+          updateSlotIndicators(getConnectedSlots());
+          sendSnapshot(true);
+        } else {
+          updateSlotIndicators(["P1", slot]);
+          channel.send(JSON.stringify({
+            type: "hello",
+            slot
+          }));
+        }
+      };
+
+      channel.onclose = () => {
+        appendLog("Canal fechado para " + slot + ".");
+        updateNetworkStatus();
+        updateSlotIndicators(getConnectedSlots());
+      };
+
+      channel.onerror = () => {
+        appendLog("Erro de canal com " + slot + ".");
+      };
+
+      channel.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+
+        if (isHostSide) {
+          if (payload.type === "input" && payload.slot === slot) {
+            game.performAction(payload.action);
+          }
+
+          if (payload.type === "hello") {
+            appendLog(slot + " confirmou conexao remota.");
+          }
+        } else {
+          if (payload.type === "snapshot") {
+            game.applySnapshot(payload.snapshot);
+            updateSlotIndicators(payload.snapshot.connectedSlots || []);
+            updateNetworkStatus();
+          }
+
+          if (payload.type === "system") {
+            appendLog(payload.message);
+          }
+        }
+      };
+    }
+
+    function createPeer(slot) {
+      const pc = new RTCPeerConnection(RTC_CONFIG);
+      const peer = { pc, channel: null, slot };
+
+      pc.onconnectionstatechange = () => {
+        updateNetworkStatus();
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        updateNetworkStatus();
+      };
+
+      return peer;
+    }
+
+    async function createHostOffer(slot, outputElement) {
+      if (networkState.mode !== "host") {
+        enableHostMode();
+      }
+
+      closePeer(networkState.hostPeers[slot]);
+      const peer = createPeer(slot);
+      networkState.hostPeers[slot] = peer;
+
+      const channel = peer.pc.createDataChannel("tetris-" + slot, { ordered: true });
+      wireChannel(peer, slot, channel, true);
+
+      const offer = await peer.pc.createOffer();
+      await peer.pc.setLocalDescription(offer);
+      await waitForIceGathering(peer.pc);
+
+      outputElement.value = buildSignal("host-offer", slot, peer.pc.localDescription);
+      appendLog("Convite gerado para " + slot + ".");
+      updateNetworkStatus();
+      updateSlotIndicators(getConnectedSlots());
+    }
+
+    async function applyHostAnswer(slot, inputElement) {
+      const peer = networkState.hostPeers[slot];
+
+      if (!peer) {
+        throw new Error("Gere o convite do " + slot + " primeiro.");
+      }
+
+      const answer = parseSignal(inputElement.value.trim(), "join-answer", slot);
+      await peer.pc.setRemoteDescription(answer.description);
+      appendLog("Resposta aplicada para " + slot + ".");
+    }
+
+    async function createJoinAnswer(slot, offerText) {
+      enableJoinMode(slot);
+
+      const signal = parseSignal(offerText.trim(), "host-offer", slot);
+      const peer = createPeer(slot);
+      networkState.joinPeer = peer;
+
+      peer.pc.ondatachannel = (event) => {
+        wireChannel(peer, slot, event.channel, false);
+      };
+
+      await peer.pc.setRemoteDescription(signal.description);
+      const answer = await peer.pc.createAnswer();
+      await peer.pc.setLocalDescription(answer);
+      await waitForIceGathering(peer.pc);
+
+      appendLog("Resposta gerada para " + slot + ".");
+      return buildSignal("join-answer", slot, peer.pc.localDescription);
+    }
+
+    function sendSystemMessage(message) {
+      if (networkState.mode !== "host") {
+        return;
+      }
+
+      const payload = JSON.stringify({ type: "system", message });
+      ["P2", "P3"].forEach((slot) => {
+        const peer = networkState.hostPeers[slot];
+        if (peer && peer.channel && peer.channel.readyState === "open") {
+          peer.channel.send(payload);
+        }
+      });
+    }
+
+    function sendSnapshot(force = false) {
+      if (networkState.mode !== "host") {
+        return;
+      }
+
+      const now = performance.now();
+      if (!force && now - networkState.lastBroadcastAt < SNAPSHOT_INTERVAL) {
+        return;
+      }
+
+      networkState.lastBroadcastAt = now;
+
+      const connectedSlots = getConnectedSlots();
+      const payload = JSON.stringify({
+        type: "snapshot",
+        snapshot: game.toSnapshot(connectedSlots)
+      });
+
+      ["P2", "P3"].forEach((slot) => {
+        const peer = networkState.hostPeers[slot];
+        if (peer && peer.channel && peer.channel.readyState === "open") {
+          peer.channel.send(payload);
+        }
+      });
+
+      updateSlotIndicators(connectedSlots);
+      updateNetworkStatus();
+    }
+
+    function sendRemoteInput(action) {
+      if (networkState.mode === "host" && networkState.localSlot === "P1") {
+        game.performAction(action);
+        return;
+      }
+
+      if (networkState.mode === "join" && networkState.joinPeer && networkState.joinPeer.channel && networkState.joinPeer.channel.readyState === "open") {
+        networkState.joinPeer.channel.send(JSON.stringify({
+          type: "input",
+          slot: networkState.localSlot,
+          action
+        }));
+      }
+    }
+
+    function getActionFromKey(code) {
+      const slotMap = SLOT_KEYS[networkState.localSlot];
+      if (!slotMap) {
+        return null;
+      }
+
+      return slotMap[code] || null;
+    }
+
+    async function copyTextFrom(targetId) {
+      const target = document.getElementById(targetId);
+      const value = target.value;
+
+      if (!value) {
+        appendLog("Nada para copiar em " + targetId + ".");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(value);
+        appendLog("Texto copiado de " + targetId + ".");
+      } catch (error) {
+        target.select();
+        document.execCommand("copy");
+        appendLog("Texto copiado com fallback de selecao.");
+        void error;
+      }
+    }
+
+    ui.hostModeButton.addEventListener("click", () => {
+      enableHostMode();
+    });
+
+    ui.restartButton.addEventListener("click", () => {
+      if (networkState.mode !== "host") {
+        return;
+      }
+
+      game.resetGame();
+      sendSystemMessage("O host reiniciou a partida.");
+      sendSnapshot(true);
+      appendLog("Partida reiniciada pelo host.");
+    });
+
+    ui.createOfferP2Button.addEventListener("click", async () => {
+      try {
+        await createHostOffer("P2", ui.offerP2Output);
+      } catch (error) {
+        appendLog(error.message);
+      }
+    });
+
+    ui.createOfferP3Button.addEventListener("click", async () => {
+      try {
+        await createHostOffer("P3", ui.offerP3Output);
+      } catch (error) {
+        appendLog(error.message);
+      }
+    });
+
+    ui.applyAnswerP2Button.addEventListener("click", async () => {
+      try {
+        await applyHostAnswer("P2", ui.answerP2Input);
+      } catch (error) {
+        appendLog(error.message);
+      }
+    });
+
+    ui.applyAnswerP3Button.addEventListener("click", async () => {
+      try {
+        await applyHostAnswer("P3", ui.answerP3Input);
+      } catch (error) {
+        appendLog(error.message);
+      }
+    });
+
+    ui.createAnswerButton.addEventListener("click", async () => {
+      try {
+        const slot = ui.joinSlotSelect.value;
+        ui.joinAnswerOutput.value = await createJoinAnswer(slot, ui.joinOfferInput.value);
+        updateNetworkStatus();
+      } catch (error) {
+        appendLog(error.message);
+      }
+    });
+
+    document.querySelectorAll("[data-copy-target]").forEach((button) => {
+      button.addEventListener("click", () => {
+        copyTextFrom(button.dataset.copyTarget);
+      });
+    });
+
     window.addEventListener("keydown", (event) => {
-      const action = controls[event.code];
+      const action = getActionFromKey(event.code);
+
       if (!action) {
         return;
       }
 
       event.preventDefault();
-      action();
-    });
-
-    document.getElementById("restartButton").addEventListener("click", () => {
-      game.resetGame();
+      sendRemoteInput(action);
     });
 
     let lastTime = 0;
 
-    // Loop principal a 60fps usando requestAnimationFrame.
     function animate(time = 0) {
       const deltaTime = time - lastTime;
       lastTime = time;
 
       game.update(deltaTime);
+
+      if (networkState.mode === "host") {
+        sendSnapshot(false);
+      }
+
       window.requestAnimationFrame(animate);
     }
 
+    appendLog("Pagina pronta. Escolha host ou entrada remota.");
+    updateHudRole();
+    updateNetworkStatus();
+    updateSlotIndicators([]);
     window.requestAnimationFrame(animate);
   </script>
 </body>
