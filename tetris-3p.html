@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris Arena Co-Op 3P</title>
+  <style>
+    :root {
+      --bg-1: #07111d;
+      --bg-2: #02060b;
+      --panel: rgba(8, 14, 25, 0.86);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f4f7fb;
+      --muted: #9eb1ca;
+      --cyan: #00d1ff;
+      --orange: #ff9f1c;
+      --red: #ff5f6d;
+      --shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 28px 18px 40px;
+      display: flex;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 15% 18%, rgba(0, 209, 255, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 12%, rgba(255, 159, 28, 0.16), transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(255, 95, 109, 0.14), transparent 28%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      width: min(1240px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      animation: fade-in 700ms ease-out both;
+    }
+
+    .hero,
+    .arena-panel,
+    .player-card {
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+        var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      padding: 24px 28px;
+    }
+
+    .hero h1 {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      font-size: clamp(2.4rem, 4vw, 4.5rem);
+      line-height: 0.95;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      max-width: 940px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    .hero strong {
+      color: var(--text);
+    }
+
+    .arena-panel {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .arena-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .arena-head h2 {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 1.55rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .pill strong {
+      color: var(--text);
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+    }
+
+    .arena-body {
+      display: flex;
+      gap: 20px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .canvas-shell {
+      flex: 1 1 360px;
+      min-width: 280px;
+      padding: 14px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)),
+        rgba(2, 8, 15, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      height: auto;
+      background:
+        linear-gradient(180deg, rgba(16, 27, 45, 0.95), rgba(5, 11, 20, 0.98));
+      border-radius: 18px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 20px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .coop-notes {
+      flex: 1 1 260px;
+      min-width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .note-card {
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .note-card h3 {
+      margin-bottom: 6px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .note-card p {
+      color: var(--text);
+      line-height: 1.45;
+      font-size: 0.97rem;
+    }
+
+    .players {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .player-card {
+      flex: 1 1 260px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .player-card::before {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 999px;
+      left: -40px;
+      top: -40px;
+      opacity: 0.16;
+      filter: blur(28px);
+      pointer-events: none;
+    }
+
+    .player-card.p1::before {
+      background: var(--cyan);
+    }
+
+    .player-card.p2::before {
+      background: var(--orange);
+    }
+
+    .player-card.p3::before {
+      background: var(--red);
+    }
+
+    .player-card h3 {
+      font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 1.3rem;
+    }
+
+    .player-card p,
+    .player-card li {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .player-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .player-card code {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.92rem;
+    }
+
+    .status-live {
+      color: #87ffbd;
+    }
+
+    .status-dead {
+      color: #ffb4bc;
+    }
+
+    .restart-button {
+      width: fit-content;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ff9f1c, #ff5f6d);
+      color: #08111f;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .restart-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .restart-button:active {
+      transform: translateY(1px);
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .hero,
+      .arena-panel,
+      .player-card {
+        border-radius: 22px;
+      }
+
+      body {
+        padding: 18px 12px 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>Tetris Arena Co-Op</h1>
+      <p>Tres jogadores, uma unica peca e uma arena compartilhada. Todos os esquemas de controle apontam para a mesma instancia da classe <strong>TetrisGame</strong>, criando um modo cooperativo caotico para a mesma partida.</p>
+    </section>
+
+    <section class="arena-panel">
+      <div class="arena-head">
+        <h2>Partida compartilhada</h2>
+        <div class="pill-row">
+          <div class="pill">Score <strong id="scoreValue">0</strong></div>
+          <div class="pill">Status <strong id="statusValue" class="status-live">Em jogo</strong></div>
+          <div class="pill">Modo <strong>3P Co-Op</strong></div>
+        </div>
+      </div>
+
+      <div class="arena-body">
+        <div class="canvas-shell">
+          <canvas id="sharedGame" width="240" height="480" aria-label="Arena compartilhada de Tetris para 3 jogadores"></canvas>
+        </div>
+
+        <div class="coop-notes">
+          <div class="note-card">
+            <h3>Como funciona</h3>
+            <p>Qualquer jogador pode mover, derrubar ou rotacionar a mesma peca ativa. O ultimo input valido vence, entao coordenacao faz diferenca.</p>
+          </div>
+
+          <div class="note-card">
+            <h3>Mecanicas</h3>
+            <p>As 7 pecas classicas estao ativas, com colisao lateral, inferior e de rotacao, limpeza de linhas, score acumulado e game over da equipe.</p>
+          </div>
+
+          <button id="restartButton" class="restart-button" type="button">Reiniciar partida</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="players">
+      <article class="player-card p1">
+        <h3>Player 1</h3>
+        <p>Controle tradicional para liderar o posicionamento da peca compartilhada.</p>
+        <ul>
+          <li><code>Seta Esquerda</code> move para a esquerda</li>
+          <li><code>Seta Direita</code> move para a direita</li>
+          <li><code>Seta Baixo</code> acelera a queda</li>
+          <li><code>Seta Cima</code> rotaciona</li>
+        </ul>
+      </article>
+
+      <article class="player-card p2">
+        <h3>Player 2</h3>
+        <p>Segundo jogador entra no mesmo fluxo e disputa o timing da mesma peca.</p>
+        <ul>
+          <li><code>A</code> move para a esquerda</li>
+          <li><code>D</code> move para a direita</li>
+          <li><code>S</code> acelera a queda</li>
+          <li><code>W</code> rotaciona</li>
+        </ul>
+      </article>
+
+      <article class="player-card p3">
+        <h3>Player 3</h3>
+        <p>Terceiro conjunto de teclas para fechar o modo cooperativo na mesma tela.</p>
+        <ul>
+          <li><code>J</code> move para a esquerda</li>
+          <li><code>L</code> move para a direita</li>
+          <li><code>K</code> acelera a queda</li>
+          <li><code>I</code> rotaciona</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 24;
+
+    // Cores das 7 pecas classicas do Tetris.
+    const COLORS = [
+      null,
+      "#00d1ff",
+      "#ffd54a",
+      "#7d7cff",
+      "#3ddc97",
+      "#ff5f6d",
+      "#ff9f1c",
+      "#9bff6b"
+    ];
+
+    class TetrisGame {
+      constructor({ canvas, scoreElement, statusElement, dropInterval = 800 }) {
+        this.canvas = canvas;
+        this.context = canvas.getContext("2d");
+        this.context.scale(BLOCK_SIZE, BLOCK_SIZE);
+
+        this.scoreElement = scoreElement;
+        this.statusElement = statusElement;
+        this.dropInterval = dropInterval;
+
+        this.resetGame();
+      }
+
+      resetGame() {
+        this.arena = this.createMatrix(COLS, ROWS);
+        this.player = {
+          pos: { x: 0, y: 0 },
+          matrix: null,
+          score: 0
+        };
+        this.dropCounter = 0;
+        this.isGameOver = false;
+        this.spawnPiece();
+        this.updateHud();
+        this.draw();
+      }
+
+      createMatrix(width, height) {
+        return Array.from({ length: height }, () => Array(width).fill(0));
+      }
+
+      createPiece(type) {
+        switch (type) {
+          case "T":
+            return [
+              [0, 0, 0],
+              [1, 1, 1],
+              [0, 1, 0]
+            ];
+          case "O":
+            return [
+              [2, 2],
+              [2, 2]
+            ];
+          case "L":
+            return [
+              [0, 3, 0],
+              [0, 3, 0],
+              [0, 3, 3]
+            ];
+          case "J":
+            return [
+              [0, 4, 0],
+              [0, 4, 0],
+              [4, 4, 0]
+            ];
+          case "I":
+            return [
+              [0, 5, 0, 0],
+              [0, 5, 0, 0],
+              [0, 5, 0, 0],
+              [0, 5, 0, 0]
+            ];
+          case "S":
+            return [
+              [0, 6, 6],
+              [6, 6, 0],
+              [0, 0, 0]
+            ];
+          case "Z":
+            return [
+              [7, 7, 0],
+              [0, 7, 7],
+              [0, 0, 0]
+            ];
+          default:
+            return [[1]];
+        }
+      }
+
+      collide(arena, player) {
+        const { matrix, pos } = player;
+
+        for (let y = 0; y < matrix.length; y += 1) {
+          for (let x = 0; x < matrix[y].length; x += 1) {
+            if (
+              matrix[y][x] !== 0 &&
+              (arena[y + pos.y] && arena[y + pos.y][x + pos.x]) !== 0
+            ) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      merge(arena, player) {
+        player.matrix.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value !== 0) {
+              arena[y + player.pos.y][x + player.pos.x] = value;
+            }
+          });
+        });
+      }
+
+      sweepArena() {
+        let rowCount = 1;
+
+        outer: for (let y = this.arena.length - 1; y >= 0; y -= 1) {
+          for (let x = 0; x < this.arena[y].length; x += 1) {
+            if (this.arena[y][x] === 0) {
+              continue outer;
+            }
+          }
+
+          const row = this.arena.splice(y, 1)[0].fill(0);
+          this.arena.unshift(row);
+          y += 1;
+
+          this.player.score += rowCount * 100;
+          rowCount *= 2;
+        }
+      }
+
+      spawnPiece() {
+        const pieces = "TJLOSZI";
+        const type = pieces[(Math.random() * pieces.length) | 0];
+
+        this.player.matrix = this.createPiece(type);
+        this.player.pos.y = 0;
+        this.player.pos.x = ((this.arena[0].length / 2) | 0) - ((this.player.matrix[0].length / 2) | 0);
+
+        if (this.collide(this.arena, this.player)) {
+          this.isGameOver = true;
+          this.updateHud();
+        }
+      }
+
+      rotate(matrix, dir) {
+        for (let y = 0; y < matrix.length; y += 1) {
+          for (let x = 0; x < y; x += 1) {
+            [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+          }
+        }
+
+        if (dir > 0) {
+          matrix.forEach((row) => row.reverse());
+        } else {
+          matrix.reverse();
+        }
+      }
+
+      move(dir) {
+        if (this.isGameOver) {
+          return;
+        }
+
+        this.player.pos.x += dir;
+        if (this.collide(this.arena, this.player)) {
+          this.player.pos.x -= dir;
+        }
+      }
+
+      drop() {
+        if (this.isGameOver) {
+          return;
+        }
+
+        this.player.pos.y += 1;
+
+        if (this.collide(this.arena, this.player)) {
+          this.player.pos.y -= 1;
+          this.merge(this.arena, this.player);
+          this.sweepArena();
+          this.spawnPiece();
+          this.updateHud();
+        }
+
+        this.dropCounter = 0;
+      }
+
+      rotatePlayer(dir = 1) {
+        if (this.isGameOver) {
+          return;
+        }
+
+        const originalX = this.player.pos.x;
+        let offset = 1;
+
+        this.rotate(this.player.matrix, dir);
+
+        // Wall-kick simples para tentar manter a rotacao valida perto das bordas.
+        while (this.collide(this.arena, this.player)) {
+          this.player.pos.x += offset;
+          offset = -(offset + (offset > 0 ? 1 : -1));
+
+          if (Math.abs(offset) > this.player.matrix[0].length) {
+            this.rotate(this.player.matrix, -dir);
+            this.player.pos.x = originalX;
+            return;
+          }
+        }
+      }
+
+      updateHud() {
+        this.scoreElement.textContent = this.player.score;
+        this.statusElement.textContent = this.isGameOver ? "Game Over" : "Em jogo";
+        this.statusElement.className = this.isGameOver ? "status-dead" : "status-live";
+      }
+
+      drawCell(value, x, y) {
+        this.context.fillStyle = COLORS[value];
+        this.context.fillRect(x + 0.06, y + 0.06, 0.88, 0.88);
+
+        this.context.fillStyle = "rgba(255, 255, 255, 0.2)";
+        this.context.fillRect(x + 0.08, y + 0.08, 0.72, 0.14);
+
+        this.context.strokeStyle = "rgba(0, 0, 0, 0.35)";
+        this.context.lineWidth = 0.05;
+        this.context.strokeRect(x + 0.06, y + 0.06, 0.88, 0.88);
+      }
+
+      drawMatrix(matrix, offset) {
+        matrix.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value !== 0) {
+              this.drawCell(value, x + offset.x, y + offset.y);
+            }
+          });
+        });
+      }
+
+      drawGrid() {
+        this.context.strokeStyle = "rgba(255, 255, 255, 0.05)";
+        this.context.lineWidth = 0.03;
+
+        for (let x = 0; x <= COLS; x += 1) {
+          this.context.beginPath();
+          this.context.moveTo(x, 0);
+          this.context.lineTo(x, ROWS);
+          this.context.stroke();
+        }
+
+        for (let y = 0; y <= ROWS; y += 1) {
+          this.context.beginPath();
+          this.context.moveTo(0, y);
+          this.context.lineTo(COLS, y);
+          this.context.stroke();
+        }
+      }
+
+      drawGameOver() {
+        const ctx = this.context;
+
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "rgba(3, 7, 12, 0.78)";
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        ctx.fillStyle = "#f4f7fb";
+        ctx.textAlign = "center";
+        ctx.font = 'bold 30px "Trebuchet MS", sans-serif';
+        ctx.fillText("GAME OVER", this.canvas.width / 2, this.canvas.height / 2 - 10);
+
+        ctx.fillStyle = "#9eb1ca";
+        ctx.font = '16px "Trebuchet MS", sans-serif';
+        ctx.fillText("Clique em Reiniciar para jogar de novo", this.canvas.width / 2, this.canvas.height / 2 + 22);
+        ctx.restore();
+      }
+
+      draw() {
+        this.context.fillStyle = "#07111d";
+        this.context.fillRect(0, 0, COLS, ROWS);
+
+        this.drawGrid();
+        this.drawMatrix(this.arena, { x: 0, y: 0 });
+        this.drawMatrix(this.player.matrix, this.player.pos);
+
+        if (this.isGameOver) {
+          this.drawGameOver();
+        }
+      }
+
+      update(deltaTime) {
+        if (!this.isGameOver) {
+          this.dropCounter += deltaTime;
+          if (this.dropCounter > this.dropInterval) {
+            this.drop();
+          }
+        }
+
+        this.draw();
+      }
+    }
+
+    const game = new TetrisGame({
+      canvas: document.getElementById("sharedGame"),
+      scoreElement: document.getElementById("scoreValue"),
+      statusElement: document.getElementById("statusValue")
+    });
+
+    // Todos os conjuntos de teclas apontam para a mesma peca ativa.
+    const controls = {
+      ArrowLeft: () => game.move(-1),
+      ArrowRight: () => game.move(1),
+      ArrowDown: () => game.drop(),
+      ArrowUp: () => game.rotatePlayer(1),
+      KeyA: () => game.move(-1),
+      KeyD: () => game.move(1),
+      KeyS: () => game.drop(),
+      KeyW: () => game.rotatePlayer(1),
+      KeyJ: () => game.move(-1),
+      KeyL: () => game.move(1),
+      KeyK: () => game.drop(),
+      KeyI: () => game.rotatePlayer(1)
+    };
+
+    window.addEventListener("keydown", (event) => {
+      const action = controls[event.code];
+      if (!action) {
+        return;
+      }
+
+      event.preventDefault();
+      action();
+    });
+
+    document.getElementById("restartButton").addEventListener("click", () => {
+      game.resetGame();
+    });
+
+    let lastTime = 0;
+
+    // Loop principal a 60fps usando requestAnimationFrame.
+    function animate(time = 0) {
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      game.update(deltaTime);
+      window.requestAnimationFrame(animate);
+    }
+
+    window.requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
